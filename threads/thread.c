@@ -646,4 +646,4 @@ allocate_tid (void) {
 	lock_release (&tid_lock);
 
 	return tid;
-}
+} 
