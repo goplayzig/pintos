@@ -363,3 +363,41 @@ bool cmp_donation_priority(const struct list_elem *a,
     struct thread *st_b = list_entry(b, struct thread, donation_elem);
     return st_a->priority > st_b->priority;
 }
+
+void remove_donor(struct lock *lock)
+{
+    struct list *donations = &(thread_current()->donations); // 현재 스레드의 donations
+    struct list_elem *donor_elem;    // 현재 스레드의 donations의 요소
+    struct thread *donor_thread;
+
+    if (list_empty(donations))
+        return;
+
+    donor_elem = list_front(donations);
+
+    while (1)
+    {
+        donor_thread = list_entry(donor_elem, struct thread, donation_elem);
+        if (donor_thread->wait_on_lock == lock)           // 현재 release될 lock을 기다리던 스레드라면
+            list_remove(&donor_thread->donation_elem); // 목록에서 제거
+        donor_elem = list_next(donor_elem);
+        if (donor_elem == list_end(donations))
+            return;
+    }
+}
+
+void update_priority_for_donations(void)
+{
+    struct thread *curr = thread_current();
+    struct list *donations = &(thread_current()->donations);
+    struct thread *donations_root;
+
+    if (list_empty(donations)) // donors가 없으면 (donor가 하나였던 경우)
+    {
+        curr->priority = curr->init_priority; // 최초의 priority로 변경
+        return;
+    }
+
+    donations_root = list_entry(list_front(donations), struct thread, donation_elem);
+    curr->priority = donations_root->priority;
+}

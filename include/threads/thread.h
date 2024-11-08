@@ -160,6 +160,8 @@ bool cmp_donation_priority(const struct list_elem *a, const struct list_elem *b,
 void do_iret (struct intr_frame *tf);
 void preempt_priority (void);
 
+void update_priority_before_donations(void);
+
 
 
 #endif /* threads/thread.h */
