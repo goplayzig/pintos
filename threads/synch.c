@@ -386,7 +386,7 @@ void remove_donor(struct lock *lock)
     }
 }
 
-void donate_prio(void)
+void donate_priority(void)
 {
    struct thread *curr = thread_current(); 
    struct thread *holder;
