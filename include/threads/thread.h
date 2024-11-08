@@ -150,6 +150,7 @@ bool cmp_thread_ticks(const struct list_elem *a, const struct list_elem *b, void
 bool cmp_thread_priority(const struct list_elem *a, const struct list_elem *b, void *aux UNUSED);
 
 void do_iret (struct intr_frame *tf);
+void preempt_priority (void);
 
 
 

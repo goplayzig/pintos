@@ -43,6 +43,9 @@ static struct list destruction_req;
 /* sleep list struct */
 static struct list sleep_list;
 
+/* waiter list struct */
+static struct list waiter_list;
+
 /* Statistics. */
 static long long idle_ticks;    /* # of timer ticks spent idle. */
 static long long kernel_ticks;  /* # of timer ticks in kernel threads. */
@@ -203,6 +206,7 @@ void thread_sleep(int64_t ticks)
             {
                 curr_elem = list_remove(curr_elem); // sleep_list에서 제거, curr_elem에는 다음 elem이 담김
                 thread_unblock(curr_thread);        // ready_list로 이동
+				preempt_priority();
             }
             else
                 break;
@@ -262,6 +266,7 @@ thread_create (const char *name, int priority,
 
 	/* Add to run queue. */
 	thread_unblock (t);
+	preempt_priority();
 
 	return tid;
 }
@@ -355,9 +360,7 @@ void
 thread_yield (void) {
 	struct thread *curr = thread_current ();
 	enum intr_level old_level;
-
 	ASSERT (!intr_context ());
-
 	old_level = intr_disable ();
 	if (curr != idle_thread)
 		// list_push_back (&ready_list, &curr->elem);
@@ -371,6 +374,7 @@ thread_yield (void) {
 void
 thread_set_priority (int new_priority) {
 	thread_current ()->priority = new_priority;
+	preempt_priority();
 }
 
 /* Returns the current thread's priority. */
@@ -646,4 +650,16 @@ allocate_tid (void) {
 	lock_release (&tid_lock);
 
 	return tid;
-} 
+}
+
+void preempt_priority(void)
+{
+    if (thread_current() == idle_thread)
+        return;
+    if (list_empty(&ready_list))
+        return;
+    struct thread *curr = thread_current();
+    struct thread *ready = list_entry(list_front(&ready_list), struct thread, elem);
+    if (curr->priority < ready->priority) // ready_list에 현재 실행중인 스레드보다 우선순위가 높은 스레드가 있으면
+        thread_yield();
+}
