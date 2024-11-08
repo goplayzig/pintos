@@ -386,6 +386,22 @@ void remove_donor(struct lock *lock)
     }
 }
 
+void donate_prio(void)
+{
+   struct thread *curr = thread_current(); 
+   struct thread *holder;
+   int priority = curr->priority;
+
+   for(int j = 0; j < 8; j++) {
+      if(curr->wait_on_lock == NULL) {
+         return;
+      }
+      holder = curr->wait_on_lock->holder;
+      holder->priority = curr->priority;
+      curr = holder;
+   }
+}
+
 void update_priority_for_donations(void)
 {
     struct thread *curr = thread_current();
