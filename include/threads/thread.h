@@ -148,6 +148,7 @@ void thread_wakeup (int64_t global_ticks);
 
 bool cmp_thread_ticks(const struct list_elem *a, const struct list_elem *b, void *aux);
 bool cmp_thread_priority(const struct list_elem *a, const struct list_elem *b, void *aux UNUSED);
+bool cmp_sema_priority(const struct list_elem *a, const struct list_elem *b, void *aux);
 
 void do_iret (struct intr_frame *tf);
 void preempt_priority (void);
