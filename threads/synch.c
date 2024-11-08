@@ -183,15 +183,22 @@ lock_init (struct lock *lock) {
    This function may sleep, so it must not be called within an
    interrupt handler.  This function may be called with
    interrupts disabled, but interrupts will be turned back on if
-   we need to sleep. */
+   we need to sleep. */ 
 void
 lock_acquire (struct lock *lock) {
 	ASSERT (lock != NULL);
 	ASSERT (!intr_context ());
 	ASSERT (!lock_held_by_current_thread (lock));
 
+   struct thread *curr = thread_current();
+   if (lock->holder != NULL) {
+      curr->wait_on_lock = lock;
+      list_insert_ordered(&lock->holder->donations, &curr->donation_elem, cmp_donation_priority, NULL);
+      donate_priority(); // 현재 스레드의 priority를 lock holder에게 상속해줌
+   }
 	sema_down (&lock->semaphore);
-	lock->holder = thread_current ();
+   curr->wait_on_lock = NULL;
+	lock->holder = thread_current();
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
@@ -223,6 +230,12 @@ void
 lock_release (struct lock *lock) {
 	ASSERT (lock != NULL);
 	ASSERT (lock_held_by_current_thread (lock));
+
+   remove_donor(lock);
+   update_priority_for_donations();
+
+   lock->holder = NULL;
+   sema_up(&lock->semaphore);
 
 	lock->holder = NULL;
 	sema_up (&lock->semaphore);
@@ -341,4 +354,12 @@ bool cmp_sema_priority(const struct list_elem *a, const struct list_elem *b, voi
     struct thread *root_b = list_entry(list_begin(waiters_b), struct thread, elem);
 
     return root_a->priority > root_b->priority;
+}
+
+bool cmp_donation_priority(const struct list_elem *a,
+                            const struct list_elem *b, void *aux UNUSED)
+{
+    struct thread *st_a = list_entry(a, struct thread, donation_elem);
+    struct thread *st_b = list_entry(b, struct thread, donation_elem);
+    return st_a->priority > st_b->priority;
 }
