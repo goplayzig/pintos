@@ -109,16 +109,12 @@ void sema_up(struct semaphore *sema)
 
     ASSERT(sema != NULL);
 
-    old_level = intr_disable();
-    if (!list_empty(&sema->waiters)) // 대기 중인 스레드를 깨움
-    {
-        // waiters에 들어있는 스레드가 donate를 받아 우선순위가 달라졌을 수 있기 때문에 재정렬
-        list_sort(&sema->waiters, cmp_thread_priority, NULL);
-        thread_unblock(list_entry(list_pop_front(&sema->waiters), struct thread, elem));
-    }
-    sema->value++;
-    preempt_priority(); // unblock이 호출되며 ready_list가 수정되었으므로 선점 여부 확인
-    intr_set_level(old_level);
+	old_level = intr_disable ();
+	if (!list_empty (&sema->waiters))
+		thread_unblock (list_entry (list_pop_front (&sema->waiters),
+					struct thread, elem));
+	sema->value++;
+	intr_set_level (old_level);
 }
 
 static void sema_test_helper (void *sema_);
