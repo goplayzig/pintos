@@ -374,7 +374,7 @@ thread_yield (void) {
 void
 thread_set_priority (int new_priority) {
 	thread_current ()->priority = new_priority;
-	update_priority_for_donations();
+	update_priority_before_donations();
 	preempt_priority();
 }
 
@@ -668,7 +668,7 @@ void preempt_priority(void)
         thread_yield();
 }
 
-void update_priority_for_donations(void) {
+void update_priority_before_donations(void) {
 	struct thread *curr = thread_current();
 	struct list *donations = &(thread_current()->donations);
 	struct thread *donations_root;
