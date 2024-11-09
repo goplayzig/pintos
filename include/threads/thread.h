@@ -161,8 +161,5 @@ void do_iret (struct intr_frame *tf);
 void preempt_priority (void);
 
 void update_priority_before_donations(void);
-// void donate_priority(void);
-
-
 
 #endif /* threads/thread.h */

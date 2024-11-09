@@ -667,3 +667,17 @@ void preempt_priority(void)
     if (curr->priority < ready->priority) // ready_list에 현재 실행중인 스레드보다 우선순위가 높은 스레드가 있으면
         thread_yield();
 }
+
+void update_priority_for_donations(void) {
+	struct thread *curr = thread_current();
+	struct list *donations = &(thread_current()->donations);
+	struct thread *donations_root;
+
+	if (list_empty(donations)) {
+		curr->priority = curr->init_priority;
+		return;
+	}
+
+	donations_root = list_entry(list_front(donations), struct thread, donation_elem);
+    curr->priority = donations_root->priority;
+}
