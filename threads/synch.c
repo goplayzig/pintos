@@ -402,8 +402,7 @@ void donate_priority(void)
    }
 }
 
-void update_priority_for_donations(void)
-{
+void update_priority_for_donations(void) {
     struct thread *curr = thread_current();
     struct list *donations = &(thread_current()->donations);
     struct thread *donations_root;
